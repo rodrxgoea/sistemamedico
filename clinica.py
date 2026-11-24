@@ -10,13 +10,22 @@ class Clinica:
         self._citas = []
         self._contador_pacientes = 0
         self._contador_citas = 0
-        # Los 5 doctores fijos, uno por especialidad
         self._medicos = [
             Medico("M001", "Oscar", "Cardiologia"),
-            Medico("M002", "Lucia", "Pediatria"),
-            Medico("M003", "Carlos", "Dermatologia"),
-            Medico("M004", "Marta", "Traumatologia"),
-            Medico("M005", "Diego", "Medicina General"),
+            Medico("M002", "Ricardo", "Cardiologia"),
+            Medico("M003", "Elena", "Cardiologia"),
+            Medico("M004", "Lucia", "Pediatria"),
+            Medico("M005", "Andrea", "Pediatria"),
+            Medico("M006", "Javier", "Pediatria"),
+            Medico("M007", "Carlos", "Dermatologia"),
+            Medico("M008", "Sofia", "Dermatologia"),
+            Medico("M009", "Raul", "Dermatologia"),
+            Medico("M010", "Marta", "Traumatologia"),
+            Medico("M011", "Pedro", "Traumatologia"),
+            Medico("M012", "Valeria", "Traumatologia"),
+            Medico("M013", "Diego", "Medicina General"),
+            Medico("M014", "Camila", "Medicina General"),
+            Medico("M015", "Hugo", "Medicina General"),
         ]
 
     @property
@@ -65,6 +74,12 @@ class Clinica:
             datetime.strptime(fecha, "%d/%m/%Y")
         except ValueError:
             raise ValueError("Fecha inválida, usa el formato dd/mm/aaaa")
+        ocupadas = list(filter(
+            lambda c: c.medico == medico and c.fecha == fecha and c.estado == "programada",
+            self._citas
+    ))
+        if ocupadas:
+            raise ValueError("Ese doctor ya tiene una cita en esa fecha")
 
         medico = self._medicos[numero_medico - 1]
         for c in self._citas:
@@ -76,3 +91,12 @@ class Clinica:
         cita = Cita(codigo, paciente, medico, fecha)
         self._citas.append(cita)
         return cita
+    def especialidades(self):
+        return list(dict.fromkeys(m.especialidad for m in self._medicos))
+
+    def medicos_por_especialidad(self, especialidad):
+        return list(filter(lambda m: m.especialidad == especialidad, self._medicos))
+
+    def buscar_medico(self, codigo):
+        resultado = list(filter(lambda m: m.codigo == codigo.upper(), self._medicos))
+        return resultado[0] if resultado else None

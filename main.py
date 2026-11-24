@@ -22,14 +22,24 @@ def mostrar_menu():
     print("7. Ver citas")
     print("0. Salir")
 
-def mostrar_doctores(clinica):
+def elegir_especialidad(clinica):
+    especialidades = clinica.especialidades()
     print("\n--- Especialidades disponibles ---")
-    for i, m in enumerate(clinica.medicos, start=1):
-        print(f"{i}. {m.especialidad} - Dr. {m.nombre}")
+    for i, esp in enumerate(especialidades, start=1):
+        print(f"{i}. {esp}")
+    n = pedir_numero(f"Elige la especialidad (1-{len(especialidades)}): ")
+    if n < 1 or n > len(especialidades):
+        raise ValueError("Especialidad inválida")
+    return especialidades[n - 1]
+
+def mostrar_doctores(clinica, especialidad):
+    print(f"\n--- Doctores de {especialidad} ---")
+    for m in clinica.medicos_por_especialidad(especialidad):
+        print(f"{m.codigo} - Dr. {m.nombre}")
 
 def main():
     clinica = Clinica("AGUIRRE")
-    print(f"\n=====Bienvenido a {clinica.nombre}====1=")
+    print(f"\n=====Bienvenido a {clinica.nombre}======")
     print(f"Trabajando por tu Salud")
    
     while True:
@@ -47,10 +57,14 @@ def main():
                 codigo = input("Código del paciente (ej. P001): ")
                 if clinica.buscar_paciente(codigo) is None:
                     raise ValueError("Paciente no encontrado")
-                mostrar_doctores(clinica)
-                numero = pedir_numero("Elige la especialidad (1-5): ")
+                especialidad = elegir_especialidad(clinica)
+                mostrar_doctores(clinica, especialidad)
+                codigo_medico = input("Código del doctor (ej. M001): ")
+                medico = clinica.buscar_medico(codigo_medico)
+                if medico is None or medico.especialidad != especialidad:
+                    raise ValueError("Doctor inválido para esa especialidad")
                 fecha = input("Fecha de la cita (dd/mm/aaaa): ")
-                cita = clinica.agendar_cita(codigo, numero, fecha)
+                cita = clinica.agendar_cita(codigo, medico.codigo, fecha)
                 print("Cita generada:", cita.resumen())
 
             elif opcion == "3":
@@ -84,7 +98,8 @@ def main():
                 print(p.mostrar_historial())
 
             elif opcion == "6":
-                mostrar_doctores(clinica)
+                especialidad = elegir_especialidad(clinica)
+                mostrar_doctores(clinica, especialidad)
 
             elif opcion == "7":
                 if not clinica.citas:
