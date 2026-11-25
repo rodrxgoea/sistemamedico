@@ -31,12 +31,15 @@ class Clinica:
     @property
     def nombre(self):
         return self._nombre
+
     @property
     def medicos(self):
         return list(self._medicos)
+
     @property
     def pacientes(self):
         return list(self._pacientes)
+
     @property
     def citas(self):
         return list(self._citas)
@@ -64,33 +67,32 @@ class Clinica:
                 return c
         return None
 
-    def agendar_cita(self, codigo_paciente, numero_medico, fecha):
+    def agendar_cita(self, codigo_paciente, codigo_medico, fecha):
         paciente = self.buscar_paciente(codigo_paciente)
         if paciente is None:
             raise ValueError("Paciente no encontrado")
-        if numero_medico < 1 or numero_medico > len(self._medicos):
-            raise ValueError("Opción de especialidad inválida")
+
+        medico = self.buscar_medico(codigo_medico)
+        if medico is None:
+            raise ValueError("Doctor no encontrado")
+
         try:
             datetime.strptime(fecha, "%d/%m/%Y")
         except ValueError:
             raise ValueError("Fecha inválida, usa el formato dd/mm/aaaa")
+
         ocupadas = list(filter(
             lambda c: c.medico == medico and c.fecha == fecha and c.estado == "programada",
-            self._citas
-    ))
+            self._citas))
         if ocupadas:
             raise ValueError("Ese doctor ya tiene una cita en esa fecha")
-
-        medico = self._medicos[numero_medico - 1]
-        for c in self._citas:
-            if c.medico == medico and c.fecha == fecha and c.estado == "programada":
-                raise ValueError("Ese doctor ya tiene una cita en esa fecha")
 
         self._contador_citas += 1
         codigo = f"C{self._contador_citas:03d}"
         cita = Cita(codigo, paciente, medico, fecha)
         self._citas.append(cita)
         return cita
+
     def especialidades(self):
         return list(dict.fromkeys(m.especialidad for m in self._medicos))
 
